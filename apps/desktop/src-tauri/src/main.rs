@@ -38,11 +38,11 @@ pub struct Pinned(AtomicBool);
 #[cfg(target_os = "macos")]
 fn apply_macos_specifics(window: &Window) {
   window.remove_shadow();
-  debug!("Removed window shadow");
+  debug!("macOS - Removed window shadow");
 
   window.set_float_panel(constants::HIGHER_LEVEL_THAN_LEAGUE);
   debug!(
-    "Set window level higher than league of legends {}",
+    "macOS - Set window level higher than league of legends {}",
     constants::HIGHER_LEVEL_THAN_LEAGUE
   );
 }
@@ -56,12 +56,14 @@ fn main() {
     .and_then(|thing| LevelFilter::from_str(thing.as_str()).ok())
     .unwrap_or(LevelFilter::Info);
 
+  info!("Log level set to: {:?}", log_level);
+
   let mut app = tauri::Builder::default()
     .plugin(window_state_plugin.build())
     .plugin(tauri_plugin_websocket::init())
     .plugin(
       tauri_plugin_log::Builder::default()
-        .targets([LogTarget::LogDir])
+        .targets([LogTarget::LogDir, LogTarget::Stdout, LogTarget::Stdout])
         .level(log_level)
         .build(),
     )
@@ -106,16 +108,17 @@ fn main() {
       {
         window.open_devtools();
         settings.open_devtools();
+        debug!("Opening devtools");
       }
 
       // update the system tray
       Tray::update_tray(&app.app_handle());
-      debug!("Updated the tray/taskbar menu");
+      debug!("Updated the tray/taskbar");
 
       // we should call this to create the config file
       create_config(&app.app_handle());
 
-      info!("Started app");
+      info!("App setup completed successfully!");
       Ok(())
     })
     // Add the system tray
